@@ -317,6 +317,7 @@ class ParticleFilter(InferenceModule):
             weights.append(currentWeight)
             if (currentWeight != 0.0):
                 allWeightsZero = False
+        # resample the particles
         if (allWeightsZero == True):
             self.initializeUniformly(self)
         else:
@@ -339,7 +340,11 @@ class ParticleFilter(InferenceModule):
         a belief distribution.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        newParticleList = []
+        for p in self.particleList:
+            newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, p))
+            newParticleList.append(util.sample(newPosDist))
+        self.particleList = newParticleList
 
     def getBeliefDistribution(self):
         """
