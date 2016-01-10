@@ -264,6 +264,11 @@ class ParticleFilter(InferenceModule):
         weight with each position) is incorrect and may produce errors.
         """
         "*** YOUR CODE HERE ***"
+        self.particleList = []
+        for idx in range(self.numParticles):
+            index = idx % len(self.legalPositions)
+            self.particleList.append(self.legalPositions[index])
+
 
     def observe(self, observation, gameState):
         """
@@ -296,7 +301,28 @@ class ParticleFilter(InferenceModule):
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # check for case when noisyDistance = None
+        if (noisyDistance == None):
+            newParticleList = []
+            for dummy in range(self.numParticles):
+                newParticleList.append(self.getJailPosition())
+            self.particleList = newParticleList
+            return
+        # observation use the particle list
+        allWeightsZero = True
+        weights = []
+        for p in self.particleList:
+            distance = util.manhattanDistance(pacmanPosition, p)
+            currentWeight = emissionModel[distance]
+            weights.append(currentWeight)
+            if (currentWeight != 0.0):
+                allWeightsZero = False
+        if (allWeightsZero == True):
+            self.initializeUniformly(self)
+        else:
+            resampled = util.nSample(weights, self.particleList, self.numParticles)
+            #print resampled 
+            self.particleList = resampled
 
     def elapseTime(self, gameState):
         """
@@ -323,7 +349,10 @@ class ParticleFilter(InferenceModule):
         Counter object)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        currentBelief = util.Counter()
+        for pos in self.particleList:
+            currentBelief[pos] += (1.0 / self.numParticles) 
+        return currentBelief
 
 class MarginalInference(InferenceModule):
     """
