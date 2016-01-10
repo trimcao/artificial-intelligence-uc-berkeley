@@ -430,6 +430,16 @@ class JointParticleFilter:
         weight with each position) is incorrect and may produce errors.
         """
         "*** YOUR CODE HERE ***"
+        self.particleList = []
+        # generate the permutations:
+        permutations = []
+        for p in itertools.product(self.legalPositions, repeat = self.numGhosts):
+            permutations.append(p)
+        random.shuffle(permutations)
+        for i in range(self.numParticles):
+            index = i % len(permutations)
+            self.particleList.append(permutations[index])
+
 
     def addGhostAgent(self, agent):
         """
@@ -440,6 +450,15 @@ class JointParticleFilter:
 
     def getJailPosition(self, i):
         return (2 * i + 1, 1);
+
+    def changeJailedParticles(self, noisyDistances):
+        for i in range(len(noisyDistances)):
+            if (noisyDistances[i] == None):
+                newParticles = []
+                for p in self.particleList:
+                    newParticles.append(self.getParticleWithGhostInJail(p, i))
+                self.particleList = newParticles
+
 
     def observeState(self, gameState):
         """
@@ -477,6 +496,53 @@ class JointParticleFilter:
         emissionModels = [busters.getObservationDistribution(dist) for dist in noisyDistances]
 
         "*** YOUR CODE HERE ***"
+        # do the case when some ghost is in jail
+        self.changeJailedParticles(noisyDistances)
+        # update particle list using observation
+        allWeightsZero = True
+        weights = []
+        for p in self.particleList:
+            productWeight = 1.0
+            for i in range(self.numGhosts):
+                distance = util.manhattanDistance(pacmanPosition, p[i])
+                currentWeight = emissionModels[i][distance]
+                productWeight *= currentWeight
+            weights.append(productWeight)
+            if (productWeight != 0.0):
+                allWeightsZero = False
+        # resample the particles
+        if (allWeightsZero == True):
+            self.initializeParticles()
+            self.changeJailedParticles(noisyDistances)
+        else:
+            resampled = util.nSample(weights, self.particleList, self.numParticles)
+            #print resampled 
+            self.particleList = resampled
+        """
+        # check for case when noisyDistance = None
+        if (noisyDistance == None):
+            newParticleList = []
+            for dummy in range(self.numParticles):
+                newParticleList.append(self.getJailPosition())
+            self.particleList = newParticleList
+            return
+        # observation use the particle list
+        allWeightsZero = True
+        weights = []
+        for p in self.particleList:
+            distance = util.manhattanDistance(pacmanPosition, p)
+            currentWeight = emissionModel[distance]
+            weights.append(currentWeight)
+            if (currentWeight != 0.0):
+                allWeightsZero = False
+        # resample the particles
+        if (allWeightsZero == True):
+            self.initializeUniformly(self)
+        else:
+            resampled = util.nSample(weights, self.particleList, self.numParticles)
+            #print resampled 
+            self.particleList = resampled
+        """
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
@@ -544,7 +610,10 @@ class JointParticleFilter:
 
     def getBeliefDistribution(self):
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        currentBelief = util.Counter()
+        for pos in self.particleList:
+            currentBelief[pos] += (1.0 / self.numParticles) 
+        return currentBelief
 
 # One JointInference module is shared globally across instances of MarginalInference
 jointInference = JointParticleFilter()
