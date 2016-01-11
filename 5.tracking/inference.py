@@ -454,6 +454,7 @@ class JointParticleFilter:
     def changeJailedParticles(self, noisyDistances):
         for i in range(len(noisyDistances)):
             if (noisyDistances[i] == None):
+                #print "trouble"
                 newParticles = []
                 for p in self.particleList:
                     newParticles.append(self.getParticleWithGhostInJail(p, i))
@@ -500,14 +501,16 @@ class JointParticleFilter:
         self.changeJailedParticles(noisyDistances)
         # update particle list using observation
         allWeightsZero = True
-        weights = []
+        tempBeliefs = util.Counter()
         for p in self.particleList:
             productWeight = 1.0
             for i in range(self.numGhosts):
-                distance = util.manhattanDistance(pacmanPosition, p[i])
-                currentWeight = emissionModels[i][distance]
-                productWeight *= currentWeight
-            weights.append(productWeight)
+                if (noisyDistances[i] != None):
+                    distance = util.manhattanDistance(pacmanPosition, p[i])
+                    currentWeight = emissionModels[i][distance]
+                    productWeight *= currentWeight
+            # add the weight to the temporary belief distribution    
+            tempBeliefs[p] += productWeight
             if (productWeight != 0.0):
                 allWeightsZero = False
         # resample the particles
@@ -515,34 +518,12 @@ class JointParticleFilter:
             self.initializeParticles()
             self.changeJailedParticles(noisyDistances)
         else:
-            resampled = util.nSample(weights, self.particleList, self.numParticles)
-            #print resampled 
-            self.particleList = resampled
-        """
-        # check for case when noisyDistance = None
-        if (noisyDistance == None):
-            newParticleList = []
-            for dummy in range(self.numParticles):
-                newParticleList.append(self.getJailPosition())
-            self.particleList = newParticleList
-            return
-        # observation use the particle list
-        allWeightsZero = True
-        weights = []
-        for p in self.particleList:
-            distance = util.manhattanDistance(pacmanPosition, p)
-            currentWeight = emissionModel[distance]
-            weights.append(currentWeight)
-            if (currentWeight != 0.0):
-                allWeightsZero = False
-        # resample the particles
-        if (allWeightsZero == True):
-            self.initializeUniformly(self)
-        else:
-            resampled = util.nSample(weights, self.particleList, self.numParticles)
-            #print resampled 
-            self.particleList = resampled
-        """
+            # note: unlike earlier, cannot use nSample here
+            tempBeliefs.normalize()
+            for i in range(self.numParticles):
+                newPos = util.sample(tempBeliefs)
+                self.particleList[i] = newPos
+
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
