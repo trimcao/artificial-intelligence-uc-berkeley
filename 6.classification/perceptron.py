@@ -51,19 +51,6 @@ class PerceptronClassifier:
         # DO NOT ZERO OUT YOUR WEIGHTS BEFORE STARTING TRAINING, OR
         # THE AUTOGRADER WILL LIKELY DEDUCT POINTS.
 
-        #print self.features
-        #print self.weights
-        #print trainingData[0]
-        # print stuffs to learn about the variables
-        #print type(trainingData[0])
-        #print trainingData[0]
-        #print len(trainingData)
-        #print trainingLabels
-        #print len(trainingLabels)
-        #print validationData
-        #print validationLabels
-        #print self.weights[0] * trainingData[0]
-        #print self.weights[0] + trainingData[0]
         for iteration in range(self.max_iterations):
             print "Starting iteration ", iteration, "..."
             for i in range(len(trainingData)):
