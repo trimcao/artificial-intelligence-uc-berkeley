@@ -154,6 +154,20 @@ def enhancedFeatureExtractorPacman(state):
         features[action] = util.Counter(features[action], **enhancedPacmanFeatures(state, action))
     return features, state.getLegalActions()
 
+def findMinDistance(pos, destList):
+    """
+    Helper method to find minimum distance
+    """
+    if (len(destList) == 0):
+        return 0 
+    minDist = float("inf")
+    for dest in destList:
+        distance = util.manhattanDistance(pos, dest)
+        if (distance < minDist):
+            minDist = distance
+    return minDist
+
+
 def enhancedPacmanFeatures(state, action):
     """
     For each state, this function is called with each legal action.
@@ -161,7 +175,44 @@ def enhancedPacmanFeatures(state, action):
     """
     features = util.Counter()
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # list of features: food count, nearest food, nearest power pellet, nearest
+    # ghost distance, average ghost distance, nearest ghost state.
+    successor = state.generateSuccessor(0, action)
+    position = successor.getPacmanPosition()
+    # nearest food feature
+    foodList = successor.getFood().asList() 
+    nearestFood = findMinDistance(position, foodList)
+    features['nearestFood'] = 1.0 / (nearestFood + 1)
+
+    # nearest ghost feature
+    ghostPositions = successor.getGhostPositions()
+    nearestGhost = findMinDistance(position, ghostPositions)
+    features['nearestGhost'] = nearestGhost
+
+    # average ghost distance
+    #sumDist = 0
+    #for ghostPos in ghostPositions:
+    #    sumDist += util.manhattanDistance(position, ghostPos)
+    #aveDist = sumDist / float(len(ghostPositions))
+    #features['aveGhostDistance'] = aveDist
+
+    # nearest power pellet
+    #capsules = successor.getCapsules()
+    #nearestCap = findMinDistance(position, capsules)
+    #features['nearestCapsule'] = nearestCap
+
+    # nearest ghost state
+    #minGhostDist = float("inf")
+    #nearGhostScaredTimer = -1
+    #for idx in range(1, len(ghostPositions) + 1):
+    #    ghostPos = successor.getGhostPosition(idx)
+    #    distance = util.manhattanDistance(position, ghostPos)
+    #    if (distance < minGhostDist):
+    #        minGhostDist = distance
+    #        nearGhostScaredTimer = successor.getGhostState(idx).scaredTimer  
+    #features['nearestGhost'] = minGhostDist
+    #features['nearestScaredTimer'] = nearGhostScaredTimer
+    #print features
     return features
 
 
