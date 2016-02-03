@@ -68,14 +68,8 @@ def isWhitePixel(x, y, width, height, datum):
     if (x < 0 or y < 0 or x >= width or y >= height):
         return False
     elif (datum.getPixel(x, y) > 0):
-        #print x
-        #print y
-        #print "pixel color: ", datum.getPixel(x, y)
         return False
     else:
-        #print x
-        #print y
-        #print "pixel color: ", datum.getPixel(x, y)
         return True
 
 def dfs(x, y, visitedPixels, datum):
@@ -116,16 +110,9 @@ def enhancedFeatureExtractorDigit(datum):
     features =  basicFeatureExtractorDigit(datum)
 
     "*** YOUR CODE HERE ***"
-    #print features
-    
     # test the white regions method by print the image and the number of 
     # regions
-    #print datum.getPixel(17, 5) 
-    #print features
-    #print datum
     numWhiteRegions = findNumWhiteRegions(datum)
-    #print numWhiteRegions
-    #util.raiseNotDefined()
     if (numWhiteRegions > 1):
         features['whiteRegions'] = 1
     else:
@@ -226,15 +213,16 @@ def analysis(classifier, guesses, testLabels, testData, rawTestData, printImage)
     #         print "Image: "
     #         print rawTestData[i]
     #         break
-    for i in range(len(guesses)):
-        prediction = guesses[i]
-        truth = testLabels[i]
-        if (prediction != truth):
-            print "==================================="
-            print "Mistake on example %d" % i
-            print "Predicted %d; truth is %d" % (prediction, truth)
-            print "Image: "
-            print rawTestData[i]
+
+    #for i in range(len(guesses)):
+    #    prediction = guesses[i]
+    #    truth = testLabels[i]
+    #    if (prediction != truth):
+    #        print "==================================="
+    #        print "Mistake on example %d" % i
+    #        print "Predicted %d; truth is %d" % (prediction, truth)
+    #        print "Image: "
+    #        print rawTestData[i]
             
 
 
