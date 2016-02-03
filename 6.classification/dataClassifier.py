@@ -64,6 +64,44 @@ def basicFeatureExtractorFace(datum):
                 features[(x,y)] = 0
     return features
 
+def isWhitePixel(x, y, width, height, datum):
+    if (x < 0 or y < 0 or x >= width or y >= height):
+        return False
+    elif (datum.getPixel(x, y) > 0):
+        #print x
+        #print y
+        #print "pixel color: ", datum.getPixel(x, y)
+        return False
+    else:
+        #print x
+        #print y
+        #print "pixel color: ", datum.getPixel(x, y)
+        return True
+
+def dfs(x, y, visitedPixels, datum):
+    for i in range(x - 1, x + 2):
+        for j in range(y - 1, y + 2):
+            if isWhitePixel(i, j, DIGIT_DATUM_WIDTH, DIGIT_DATUM_HEIGHT, datum):
+                if (visitedPixels[(i, j)] == 0):
+                    visitedPixels[(i, j)] = 1
+                    dfs(i, j, visitedPixels, datum) 
+
+def findNumWhiteRegions(datum):
+    """
+    Method to find the number of contiguous white regions.
+    """
+    visitedPixels = util.Counter()
+    visitedPixels[(0, 0)] = 1
+    dfs(0, 0, visitedPixels, datum)
+    # check all pixels and check if there is any white pixel that not already
+    # existed in visitedPixels
+    for x in range(DIGIT_DATUM_WIDTH):
+        for y in range(DIGIT_DATUM_HEIGHT):
+            if (datum.getPixel(x, y) == 0):
+                if (visitedPixels[(x, y)] != 1):
+                    return 2
+    return 1
+
 def enhancedFeatureExtractorDigit(datum):
     """
     Your feature extraction playground.
@@ -72,14 +110,26 @@ def enhancedFeatureExtractorDigit(datum):
     for this datum (datum is of type samples.Datum).
 
     ## DESCRIBE YOUR ENHANCED FEATURES HERE...
-
+        1. number of contiguous white regions
     ##
     """
     features =  basicFeatureExtractorDigit(datum)
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-
+    #print features
+    
+    # test the white regions method by print the image and the number of 
+    # regions
+    #print datum.getPixel(17, 5) 
+    #print features
+    #print datum
+    numWhiteRegions = findNumWhiteRegions(datum)
+    #print numWhiteRegions
+    #util.raiseNotDefined()
+    if (numWhiteRegions > 1):
+        features['whiteRegions'] = 1
+    else:
+        features['whiteRegions'] = 0
     return features
 
 
@@ -176,6 +226,16 @@ def analysis(classifier, guesses, testLabels, testData, rawTestData, printImage)
     #         print "Image: "
     #         print rawTestData[i]
     #         break
+    for i in range(len(guesses)):
+        prediction = guesses[i]
+        truth = testLabels[i]
+        if (prediction != truth):
+            print "==================================="
+            print "Mistake on example %d" % i
+            print "Predicted %d; truth is %d" % (prediction, truth)
+            print "Image: "
+            print rawTestData[i]
+            
 
 
 ## =====================
